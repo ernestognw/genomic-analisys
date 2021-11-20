@@ -30,19 +30,35 @@ size_t readDNA(char name[], char buff[])
       return newLen;
    }
 }
-int findInString(int start, int end, char *sequence, char *reference, size_t reference_length)
+int findInString(int start, int end, char *sequence, char *reference, size_t reference_length, size_t sequence_length)
 {
    // Returns -1 if substring not found
    // Returns location if found
-   printf("en el findString");
 
-   for (int i = start; i <= end)
+   //En español ---> Para verificar que la secuencia esxista en el genoma del texto referencia y su sposición
+   // FATLTA PARALELIZAR. CADA FOR SE PUEDE PARALELIZAR.
+   for (int i = start; i <= end; i++)
    {
-      for (int j = 0; j)
+      for (int j = 0; j < sequence_length; j++)
+      {
+         if (sequence[j] == reference[i + j])
+         {
+            if (j == sequence_length - 1)
+            {
+               return i;
+            }
+            continue;
+         }
+         else
+         {
+            break;
+         }
+      }
+      return -1;
    }
 }
 
-int findLocation(char *sequence, char *reference, size_t reference_length)
+int findLocation(char *sequence, char *reference, size_t reference_length, size_t sequence_length)
 {
    int position;
    int block_size = reference_length / NTHREADS;
@@ -55,7 +71,7 @@ int findLocation(char *sequence, char *reference, size_t reference_length)
       {
          end = reference_length;
       }
-      position = findInString(start, end, sequence, reference, reference_length);
+      position = findInString(start, end, sequence, reference, reference_length, sequence_length);
       if (position != -1)
       {
          return position;

@@ -38,7 +38,8 @@ int findInString(int start, int end, char *sequence, char *reference, size_t ref
 
    for (int i = start; i <= end)
    {
-      }
+      for (int j = 0; j)
+   }
 }
 
 int findLocation(char *sequence, char *reference, size_t reference_length)

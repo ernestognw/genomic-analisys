@@ -2,23 +2,25 @@
 
 #define BUFF_SIZE 16000000
 
-char source[BUFF_SIZE + 1];
+char reference[BUFF_SIZE + 1];
+char sequence[BUFF_SIZE + 1];
 
 //Returns size of sequence
-size_t readFile()
+//Esto sera funcion del cliente (leer el archivo para mandarlo al servidor)
+size_t readDNA(char *name, char *buff)
 {
-   FILE *fp = fopen("S._cerevisiae_processed.txt", "r");
+   FILE *fp = fopen(name, "r");
    if (fp != NULL)
    {
       //file stored in memory
-      size_t newLen = fread(source, sizeof(char), BUFF_SIZE, fp);
+      size_t newLen = fread(buff, sizeof(char), BUFF_SIZE, fp);
       if (ferror(fp) != 0)
       {
          fputs("Error reading file", stderr);
       }
       else
       {
-         source[newLen++] = '\0'; /* Just to be safe. */
+         buff[newLen++] = '\0'; /* Just to be safe. */
       }
       fclose(fp);
       return newLen;
@@ -28,7 +30,8 @@ size_t readFile()
 int main()
 {
 
-   printf("Hello, World!\n");
+   size_t reference_length = readDNA("S._cerevisiae_processed.txt", reference);
+   size_t sequence_length = readDNA("s_cerevisia_2021_03.seq", sequence);
 
    return 0;
 }

@@ -37,9 +37,9 @@ int findInString(int start, int end, char *sequence, char *reference, size_t ref
 
    //En español ---> Para verificar que la secuencia esxista en el genoma del texto referencia y su sposición
    // FATLTA PARALELIZAR. CADA FOR SE PUEDE PARALELIZAR.
-   for (int i = start; i <= end; i++)
+   for (int i = start; i <= end; i++) //bloque de texto
    {
-      for (int j = 0; j < sequence_length; j++)
+      for (int j = 0; j < sequence_length; j++) //secuence
       {
          if (sequence[j] == reference[i + j])
          {
@@ -78,6 +78,8 @@ int findLocation(char *sequence, char *reference, size_t reference_length, size_
       }
    }
 }
+//TODO: sumar size de bloques anteriores, para la posicion
+//TODO: Que pasa si la secuencia se queda entre dos bloques, hacer otra funcion que se le regresa la i (posicion inicial), la secuencia que se esta coomparando y otra posicion que sea donde se quedo de la secuencia larga para seguir la comparacion.
 
 int main()
 {
@@ -85,6 +87,9 @@ int main()
    size_t reference_length = readDNA("S._cerevisiae_processed.txt", reference);
    // Lo tenemos que leer linea por linea, tiene que ser otra funcion
    // size_t sequence_length = readDNA("s_cerevisia_2021_03.seq", sequence);
+   printf("%ld \n", reference_length);
+
+   printf("%c", reference[1]);
 
    return 0;
 }

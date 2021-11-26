@@ -29,7 +29,10 @@ size_t readDNA(char name[], char buff[])
       fclose(fp);
       return newLen;
    }
+   
+   return 0;
 }
+
 int findInString(int start, int end, char *sequence, char *reference, size_t reference_length, size_t sequence_length)
 {
    // Returns -1 if substring not found

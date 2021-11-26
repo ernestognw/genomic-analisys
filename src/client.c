@@ -10,15 +10,16 @@ void getFileContent(char filename[], char content[])
 
   if (filePointer == NULL)
   {
-    perror("Error while opening the file.\n");
-    exit(EXIT_FAILURE);
+    perror("Error while opening the file");
+    fclose(filePointer);
+    return;
   }
 
   int i = 0;
   char character;
   while ((character = fgetc(filePointer)) != EOF)
     content[i++] = character;
-  
+
   content[i] = '\0'; // End string
 
   fclose(filePointer);

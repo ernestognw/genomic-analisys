@@ -1,12 +1,6 @@
 
 .DEFAULT_GOAL := run
 
-run: 
-	@echo "Running DNA analyzer"
-	gcc main.c -o main.out && ./main.out
-	@echo "Cleaning"
-	rm main.out
-
 server: 
 	@echo "Running DNA analyzer server"
 	gcc server.c -o server.out && ./server.out

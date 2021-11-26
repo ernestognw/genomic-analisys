@@ -50,7 +50,7 @@ void processLine(const char *line, int interval[2])
 {
   char *substringPointer = strstr(storedReference, line);
 
-  if (substringPointer)
+  if (substringPointer != NULL)
   {
     int position = substringPointer - storedReference;
     interval[0] = position;
@@ -61,7 +61,7 @@ void processLine(const char *line, int interval[2])
   {
     interval[0] = 0;
     interval[1] = 0;
-    printf("%s was not found\n", line);
+    printf("%s was not found\n\n", line);
   }
 }
 
@@ -115,7 +115,7 @@ void uploadSequence(char uploadedSequence[])
 
     int coverage = intervalsCoverage(intervals, linesCount);
     float percentage = (float)coverage / (float)strlen(storedReference) * 100;
-    printf("%d lines covering %f %% of the genoma reference\n", coverage, percentage);
+    printf("%d lines covering %f%% of the genoma reference\n", coverage, percentage);
   }
 }
 

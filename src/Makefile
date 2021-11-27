@@ -3,7 +3,7 @@
 
 server: 
 	@echo "Running DNA analyzer server"
-	gcc -fopenmp server.c  -o server.out && ./server.out
+	gcc -fopenmp  server.c -lm  -o server.out && ./server.out
 	@echo "Cleaning"
 	rm server.out
 

@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 #include "constants.c"
-#include "server.c"
 
 void getFileContent(char filename[], char content[])
 {
@@ -25,7 +26,7 @@ void getFileContent(char filename[], char content[])
   fclose(filePointer);
 }
 
-void handleUploadReference()
+void handleUploadReference(int sockfd)
 {
   char filename[BUFF_SIZE];
   char reference[BUFF_SIZE];
@@ -35,11 +36,11 @@ void handleUploadReference()
 
   getFileContent(filename, reference);
 
-  // TODO: Replace with message sent via sockets when server is ready
-  uploadReference(reference);
+  write(sockfd, UPLOAD_REFERENCE, sizeof(UPLOAD_REFERENCE));
+  write(sockfd, reference, sizeof(reference));
 }
 
-void handleUploadSequence()
+void handleUploadSequence(int sockfd)
 {
   char filename[BUFF_SIZE];
   char sequence[BUFF_SIZE];
@@ -49,11 +50,11 @@ void handleUploadSequence()
 
   getFileContent(filename, sequence);
 
-  // TODO: Replace with message sent via sockets when server is ready
-  uploadSequence(sequence);
+  write(sockfd, UPLOAD_SEQUENCE, sizeof(UPLOAD_SEQUENCE));
+  write(sockfd, sequence, sizeof(sequence));
 }
 
-int main()
+int menu(int sockfd)
 {
   int finished = 0;
   int operation;
@@ -71,10 +72,10 @@ int main()
     switch (operation)
     {
     case 1:
-      handleUploadReference();
+      handleUploadReference(sockfd);
       break;
     case 2:
-      handleUploadSequence();
+      handleUploadSequence(sockfd);
       break;
     default:
       finished = 1;
@@ -84,4 +85,28 @@ int main()
   printf("============== Thanks! ==============\n");
 
   return 0;
+}
+
+int main()
+{
+  int sockfd, connfd;
+  SA_IN servaddr, cli;
+
+  // Socket create and verification
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd == -1)
+    exit(EXIT_FAILURE);
+  bzero(&servaddr, sizeof(servaddr));
+
+  // Assign IP, PORT
+  servaddr.sin_family = AF_INET;
+  servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  servaddr.sin_port = htons(PORT);
+
+  // Connect the client socket to server socket
+  if (connect(sockfd, (SA *)&servaddr, sizeof(servaddr)) != 0)
+    exit(EXIT_FAILURE);
+
+  menu(sockfd);
+  close(sockfd);
 }

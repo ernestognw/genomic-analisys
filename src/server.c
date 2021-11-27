@@ -2,12 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include "constants.c"
 
 char storedReference[BUFF_SIZE];
 
 void uploadReference(char uploadedReference[])
 {
+  bzero(storedReference, BUFF_SIZE);
   strcpy(storedReference, uploadedReference);
 }
 
@@ -62,7 +66,7 @@ void processLine(const char *line, int interval[2])
   {
     interval[0] = 0;
     interval[1] = 0;
-    printf("%s was not found\n\n", line);
+    printf("%s was not found\n", line);
   }
 }
 
@@ -120,9 +124,58 @@ void uploadSequence(char uploadedSequence[])
   }
 }
 
-int main()
+void receiver(int sockfd)
 {
-  return 0;
+  char buff[BUFF_SIZE];
+  while (1)
+  {
+    bzero(buff, BUFF_SIZE);
+    read(sockfd, buff, sizeof(buff));
+    if (strcmp(buff, UPLOAD_REFERENCE) == 0)
+    {
+      bzero(buff, BUFF_SIZE);
+      read(sockfd, buff, sizeof(buff));
+      uploadReference(buff);
+    }
+    else if (strcmp(buff, UPLOAD_SEQUENCE) == 0)
+    {
+      bzero(buff, BUFF_SIZE);
+      read(sockfd, buff, sizeof(buff));
+      uploadSequence(buff);
+    }
+  }
 }
 
-// TODO: Daemonize
+int main()
+{
+  int sockfd, connfd;
+  SA_IN servaddr, client;
+
+  // Socket create and verification
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd == -1)
+    exit(EXIT_FAILURE);
+  bzero(&servaddr, sizeof(servaddr));
+
+  // Assign IP, PORT
+  servaddr.sin_family = AF_INET;
+  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servaddr.sin_port = htons(PORT);
+
+  // Binding newly created socket to given IP and verification
+  if ((bind(sockfd, (SA *)&servaddr, sizeof(servaddr))) != 0)
+    exit(EXIT_FAILURE);
+
+  // Listen
+  if ((listen(sockfd, 5)) != 0)
+    exit(EXIT_FAILURE);
+
+  // Accept the data packet from client and verification
+  int len = sizeof(client);
+  connfd = accept(sockfd, (SA *)&client, (socklen_t *)&len);
+  if (connfd < 0)
+    exit(EXIT_FAILURE);
+
+  receiver(connfd);
+  close(sockfd);
+}

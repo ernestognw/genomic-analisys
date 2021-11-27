@@ -120,4 +120,8 @@ void uploadSequence(char uploadedSequence[])
   }
 }
 
+void main()
+{
+}
+
 // TODO: Daemonize

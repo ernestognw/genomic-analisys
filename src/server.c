@@ -109,7 +109,7 @@ void uploadSequence(char uploadedSequence[])
     int linesCount = 0;
     char **splitted = split(uploadedSequence, '\n', &linesCount);
     int intervals[linesCount][2];
-
+#pragma parallel for
     for (int i = 0; *(splitted + i); i++)
       processLine(*(splitted + i), intervals[i]);
 

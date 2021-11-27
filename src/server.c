@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "constants.c"
+#include <pthread.h>
 
 char storedReference[BUFF_SIZE];
 
@@ -105,18 +106,39 @@ int intervalsCoverage(int intervals[][2], int intervalsAmount)
   return coverage;
 }
 
+void* part1(void * arg){
+  int *iptr = (int *) arg;
+  for (int i = 0; i < *iptr / 2; i++)
+      processLine(*(splitted + i), intervals[i]);
+}
+
+void* part2(void * arg){
+  int *iptr = (int *) arg;
+  for (int i = *iptr / 2; i < *iptr; i++)
+      processLine(*(splitted + i), intervals[i]);
+}
+
 void uploadSequence(char uploadedSequence[])
 {
   if (strlen(storedReference) == 0)
     printf("No reference has been previously uploaded\n");
   else
   {
+    pthread_t thread1;
+    pthread_t thread2;
     int linesCount = 0;
     char **splitted = split(uploadedSequence, '\n', &linesCount);
+    int size = strlen(splitted);
     int intervals[linesCount][2];
-#pragma parallel for
-    for (int i = 0; *(splitted + i); i++)
-      processLine(*(splitted + i), intervals[i]);
+
+    pthread_create(&thread1,NULL,part1,&size);
+    pthread_create(&thread2,NULL,part2,&size);
+// #pragma parallel for
+//     for (int i = 0; *(splitted + i); i++)
+//       processLine(*(splitted + i), intervals[i]);
+
+    pthread_join(&thre1,NULL);
+    pthread_join(&thre2,NULL);
 
     int coverage = intervalsCoverage(intervals, linesCount);
     float percentage = (float)coverage / (float)strlen(storedReference) * 100;

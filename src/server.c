@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <omp.h>
 #include "constants.c"
 
@@ -54,8 +55,31 @@ char **split(char *toSplit, const char delimiter, int *count)
   return result;
 }
 
-void processLine(const char *line, int interval[2])
+char *trimwhitespace(char *str)
 {
+  char *end;
+
+  // Trim leading space
+  while (isspace((unsigned char)*str))
+    str++;
+
+  if (*str == 0) // All spaces?
+    return str;
+
+  // Trim trailing space
+  end = str + strlen(str) - 1;
+  while (end > str && isspace((unsigned char)*end))
+    end--;
+
+  // Write new null terminator character
+  end[1] = '\0';
+
+  return str;
+}
+
+void processLine(char *line, int interval[2])
+{
+  line = trimwhitespace(line);
   char *substringPointer = strstr(storedReference, line);
 
   if (substringPointer != NULL)

@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <omp.h>
 #include "constants.c"
 
 char storedReference[BUFF_SIZE];
@@ -114,9 +115,14 @@ void uploadSequence(char uploadedSequence[])
     int linesCount = 0;
     char **splitted = split(uploadedSequence, '\n', &linesCount);
     int intervals[linesCount][2];
-#pragma parallel for
-    for (int i = 0; *(splitted + i); i++)
-      processLine(*(splitted + i), intervals[i]);
+
+    int i = 0;
+#pragma omp parallel default(none) private(i) shared(splitted, intervals, linesCount)
+    {
+#pragma omp for
+      for (int i = 0; i < linesCount; i++)
+        processLine(*(splitted + i), intervals[i]);
+    }
 
     int coverage = intervalsCoverage(intervals, linesCount);
     float percentage = (float)coverage / (float)strlen(storedReference) * 100;
@@ -176,6 +182,7 @@ int main()
   if (connfd < 0)
     exit(EXIT_FAILURE);
 
+  omp_set_num_threads(NUM_THREADS);
   receiver(connfd);
   close(sockfd);
 }

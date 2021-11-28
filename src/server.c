@@ -33,6 +33,8 @@ char **split(char *toSplit, const char delimiter, int *count)
     tmp++;
   }
 
+  count++;
+
   char delim[] = {delimiter};
   char **result = malloc(sizeof(char *) * *(count));
 
@@ -121,7 +123,9 @@ void uploadSequence(char uploadedSequence[])
     {
 #pragma omp for
       for (int i = 0; i < linesCount; i++)
+      {
         processLine(*(splitted + i), intervals[i]);
+      }
     }
 
     int coverage = intervalsCoverage(intervals, linesCount);

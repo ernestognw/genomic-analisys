@@ -1,2 +1,3 @@
 docker build . -t genomic
-docker run -it genomic /bin/bash
+docker run -it --memory="4g" --name genomic genomic /bin/bash
+docker rm genomic

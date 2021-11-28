@@ -36,8 +36,11 @@ void handleUploadReference(int sockfd)
 
   getFileContent(filename, reference);
 
-  write(sockfd, UPLOAD_REFERENCE, sizeof(UPLOAD_REFERENCE));
-  write(sockfd, reference, sizeof(reference));
+  if (strlen(reference) != 0)
+  {
+    write(sockfd, UPLOAD_REFERENCE, sizeof(UPLOAD_REFERENCE));
+    write(sockfd, reference, sizeof(reference));
+  }
 }
 
 void handleUploadSequence(int sockfd)
@@ -49,9 +52,11 @@ void handleUploadSequence(int sockfd)
   scanf("%s", filename);
 
   getFileContent(filename, sequence);
-
-  write(sockfd, UPLOAD_SEQUENCE, sizeof(UPLOAD_SEQUENCE));
-  write(sockfd, sequence, sizeof(sequence));
+  if (strlen(sequence) != 0)
+  {
+    write(sockfd, UPLOAD_SEQUENCE, sizeof(UPLOAD_SEQUENCE));
+    write(sockfd, sequence, sizeof(sequence));
+  }
 }
 
 int menu(int sockfd)

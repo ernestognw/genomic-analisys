@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <sys/socket.h>
 #include <omp.h>
 #include "constants.c"
 
@@ -16,29 +17,35 @@ void uploadReference(char uploadedReference[])
   bzero(storedReference, BUFF_SIZE);
   printf("Received reference of %lu length\n", strlen(uploadedReference));
   strcpy(storedReference, uploadedReference);
+  bzero(uploadedReference, BUFF_SIZE);
 }
 
-char **split(char *toSplit, const char delimiter, int *count)
+char **split(char *toSplit, const char delimiter, int *length)
 {
-  *(count) = 0;
+  char **result = 0;
+  int count = 0;
   char *tmp = toSplit;
   char *lastDelimiter = 0;
+  char delim[2];
+  delim[0] = delimiter;
+  delim[1] = 0;
 
-  // Count how many elements will be extracted.
+  /* Count how many elements will be extracted. */
   while (*tmp)
   {
     if (delimiter == *tmp)
     {
-      *(count) += 1;
+      count++;
       lastDelimiter = tmp;
     }
     tmp++;
   }
 
+  /* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
   count++;
 
-  char delim[] = {delimiter};
-  char **result = malloc(sizeof(char *) * *(count));
+  result = malloc(sizeof(char *) * count);
 
   if (result)
   {
@@ -48,10 +55,12 @@ char **split(char *toSplit, const char delimiter, int *count)
     while (token)
     {
       *(result + index++) = strdup(token);
-      token = strtok(NULL, delim);
+      token = strtok(0, delim);
     }
     *(result + index) = 0;
   }
+
+  *(length) = count;
 
   return result;
 }
@@ -143,6 +152,7 @@ void uploadSequence(char uploadedSequence[])
     int linesCount = 0;
     char **splitted = split(uploadedSequence, '\n', &linesCount);
     int intervals[linesCount][2];
+    bzero(uploadedSequence, BUFF_SIZE);
 
     int i = 0;
 #pragma omp parallel default(none) shared(i, splitted, intervals, linesCount)
@@ -162,22 +172,45 @@ void uploadSequence(char uploadedSequence[])
 
 void receiver(int sockfd)
 {
-  char buff[BUFF_SIZE];
   while (1)
   {
-    bzero(buff, BUFF_SIZE);
-    read(sockfd, buff, sizeof(buff));
-    if (strcmp(buff, UPLOAD_REFERENCE) == 0)
+    char chunk[CHUNK_SIZE];
+    bzero(chunk, CHUNK_SIZE);
+    recv(sockfd, chunk, sizeof(chunk), 0);
+
+    if (strcmp(chunk, UPLOAD_REFERENCE) == 0)
     {
-      bzero(buff, BUFF_SIZE);
-      read(sockfd, buff, sizeof(buff));
-      uploadReference(buff);
+      char reference[BUFF_SIZE];
+      bzero(reference, BUFF_SIZE);
+      bzero(chunk, CHUNK_SIZE);
+      int finished = 0;
+      while (!finished)
+      {
+        bzero(chunk, CHUNK_SIZE);
+        recv(sockfd, chunk, sizeof(chunk), 0);
+        if (strcmp(chunk, FINISHED_BUFFER) == 0)
+          finished = 1;
+        else
+          strcat(reference, chunk);
+      }
+      uploadReference(reference);
     }
-    else if (strcmp(buff, UPLOAD_SEQUENCE) == 0)
+    else if (strcmp(chunk, UPLOAD_SEQUENCE) == 0)
     {
-      bzero(buff, BUFF_SIZE);
-      read(sockfd, buff, sizeof(buff));
-      uploadSequence(buff);
+      char sequence[BUFF_SIZE];
+      bzero(sequence, BUFF_SIZE);
+      bzero(chunk, CHUNK_SIZE);
+      int finished = 0;
+      while (!finished)
+      {
+        bzero(chunk, CHUNK_SIZE);
+        recv(sockfd, chunk, sizeof(chunk), 0);
+        if (strcmp(chunk, FINISHED_BUFFER) == 0)
+          finished = 1;
+        else
+          strcat(sequence, chunk);
+      }
+      uploadSequence(sequence);
     }
   }
 }

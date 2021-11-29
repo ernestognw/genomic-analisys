@@ -11,7 +11,7 @@ void getFileContent(char filename[], char content[])
 
   if (filePointer == NULL)
   {
-    perror("Error while opening the file");
+    printf("Error while opening the file");
     fclose(filePointer);
     return;
   }
@@ -30,6 +30,8 @@ void handleUploadReference(int sockfd)
 {
   char filename[BUFF_SIZE];
   char reference[BUFF_SIZE];
+  bzero(filename, sizeof(filename));
+  bzero(reference, sizeof(reference));
 
   printf("Type the path to the file with the reference: ");
   scanf("%s", filename);
@@ -39,7 +41,28 @@ void handleUploadReference(int sockfd)
   if (strlen(reference) != 0)
   {
     write(sockfd, UPLOAD_REFERENCE, sizeof(UPLOAD_REFERENCE));
-    write(sockfd, reference, sizeof(reference));
+    sleep(1);
+    char chunk[CHUNK_SIZE];
+    bzero(chunk, sizeof(chunk));
+    int length = strlen(reference);
+
+    int i = 0;
+    for (int j = 0; j < length; j++, i++)
+    {
+      if (i == CHUNK_SIZE)
+      {
+        puts("Sending...");
+        write(sockfd, chunk, sizeof(chunk));
+        i = 0;
+      }
+      else
+        chunk[i] = reference[j];
+    }
+
+    if (i != 0)
+      write(sockfd, chunk, sizeof(chunk));
+
+    write(sockfd, FINISHED_BUFFER, sizeof(FINISHED_BUFFER));
   }
 }
 
@@ -47,6 +70,8 @@ void handleUploadSequence(int sockfd)
 {
   char filename[BUFF_SIZE];
   char sequence[BUFF_SIZE];
+  bzero(filename, sizeof(filename));
+  bzero(sequence, sizeof(sequence));
 
   printf("Type the path to the file with the sequence: ");
   scanf("%s", filename);
@@ -55,7 +80,28 @@ void handleUploadSequence(int sockfd)
   if (strlen(sequence) != 0)
   {
     write(sockfd, UPLOAD_SEQUENCE, sizeof(UPLOAD_SEQUENCE));
-    write(sockfd, sequence, sizeof(sequence));
+    sleep(1);
+    char chunk[CHUNK_SIZE];
+    bzero(chunk, sizeof(chunk));
+    int length = strlen(sequence);
+
+    int i = 0;
+    for (int j = 0; j < length; j++, i++)
+    {
+      if (i == CHUNK_SIZE)
+      {
+        puts("Sending...");
+        write(sockfd, chunk, sizeof(chunk));
+        i = 0;
+      }
+      else
+        chunk[i] = sequence[j];
+    }
+
+    if (i != 0)
+      write(sockfd, chunk, sizeof(chunk));
+
+    write(sockfd, FINISHED_BUFFER, sizeof(FINISHED_BUFFER));
   }
 }
 

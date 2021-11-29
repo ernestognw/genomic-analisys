@@ -14,6 +14,7 @@ char storedReference[BUFF_SIZE];
 void uploadReference(char uploadedReference[])
 {
   bzero(storedReference, BUFF_SIZE);
+  printf("Received reference of %lu length\n", strlen(uploadedReference));
   strcpy(storedReference, uploadedReference);
 }
 
@@ -26,7 +27,7 @@ char **split(char *toSplit, const char delimiter, int *count)
   // Count how many elements will be extracted.
   while (*tmp)
   {
-    if (delimiter == *tmp)
+    if (delimiter == tmp[a])
     {
       *(count) += 1;
       lastDelimiter = tmp;
@@ -138,12 +139,13 @@ void uploadSequence(char uploadedSequence[])
     printf("No reference has been previously uploaded\n");
   else
   {
+    printf("Received sequence of %lu length\n", strlen(uploadedSequence));
     int linesCount = 0;
     char **splitted = split(uploadedSequence, '\n', &linesCount);
     int intervals[linesCount][2];
 
     int i = 0;
-#pragma omp parallel default(none) private(i) shared(splitted, intervals, linesCount)
+#pragma omp parallel default(none) shared(i, splitted, intervals, linesCount)
     {
 #pragma omp for
       for (int i = 0; i < linesCount; i++)
@@ -154,7 +156,7 @@ void uploadSequence(char uploadedSequence[])
 
     int coverage = intervalsCoverage(intervals, linesCount);
     float percentage = (float)coverage / (float)strlen(storedReference) * 100;
-    printf("%d lines covering %f%% of the genoma reference\n", coverage, percentage);
+    printf("%d characters covering %f%% of the genoma reference\n", coverage, percentage);
   }
 }
 

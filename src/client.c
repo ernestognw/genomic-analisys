@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 #include "constants.c"
+#include "server.c"
 
 void getFileContent(char filename[], char content[])
 {
@@ -11,7 +10,7 @@ void getFileContent(char filename[], char content[])
 
   if (filePointer == NULL)
   {
-    perror("Error while opening the file");
+    printf("Error while opening the file");
     fclose(filePointer);
     return;
   }
@@ -26,8 +25,9 @@ void getFileContent(char filename[], char content[])
   fclose(filePointer);
 }
 
-void handleUploadReference(int sockfd)
+void handleUploadReference()
 {
+  printf("Hola");
   char filename[BUFF_SIZE];
   char reference[BUFF_SIZE];
 
@@ -36,11 +36,11 @@ void handleUploadReference(int sockfd)
 
   getFileContent(filename, reference);
 
-  write(sockfd, UPLOAD_REFERENCE, sizeof(UPLOAD_REFERENCE));
-  write(sockfd, reference, sizeof(reference));
+  // TODO: Replace with message sent via sockets when server is ready
+  uploadReference(reference);
 }
 
-void handleUploadSequence(int sockfd)
+void handleUploadSequence()
 {
   char filename[BUFF_SIZE];
   char sequence[BUFF_SIZE];
@@ -50,11 +50,11 @@ void handleUploadSequence(int sockfd)
 
   getFileContent(filename, sequence);
 
-  write(sockfd, UPLOAD_SEQUENCE, sizeof(UPLOAD_SEQUENCE));
-  write(sockfd, sequence, sizeof(sequence));
+  // TODO: Replace with message sent via sockets when server is ready
+  uploadSequence(sequence);
 }
 
-int menu(int sockfd)
+int main(int argc, char *argv[])
 {
   int finished = 0;
   int operation;
@@ -72,10 +72,10 @@ int menu(int sockfd)
     switch (operation)
     {
     case 1:
-      handleUploadReference(sockfd);
+      handleUploadReference();
       break;
     case 2:
-      handleUploadSequence(sockfd);
+      handleUploadSequence();
       break;
     default:
       finished = 1;
@@ -85,28 +85,4 @@ int menu(int sockfd)
   printf("============== Thanks! ==============\n");
 
   return 0;
-}
-
-int main()
-{
-  int sockfd, connfd;
-  SA_IN servaddr, cli;
-
-  // Socket create and verification
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd == -1)
-    exit(EXIT_FAILURE);
-  bzero(&servaddr, sizeof(servaddr));
-
-  // Assign IP, PORT
-  servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-  servaddr.sin_port = htons(PORT);
-
-  // Connect the client socket to server socket
-  if (connect(sockfd, (SA *)&servaddr, sizeof(servaddr)) != 0)
-    exit(EXIT_FAILURE);
-
-  menu(sockfd);
-  close(sockfd);
 }

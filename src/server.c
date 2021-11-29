@@ -2,16 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include "constants.c"
 
-char storedReference[BUFF_SIZE];
+ char storedReference[BUFF_SIZE];
 
 void uploadReference(char uploadedReference[])
 {
-  bzero(storedReference, BUFF_SIZE);
   strcpy(storedReference, uploadedReference);
 }
 
@@ -51,9 +47,18 @@ char **split(char *toSplit, const char delimiter, int *count)
   return result;
 }
 
-void processLine(const char *line, int interval[2])
+void processLine(  char *line, int interval[2])
 {
-  char *substringPointer = strstr(storedReference, line);
+
+ size_t n = strlen(line);
+if (n > 0 && line[n] == '\0') {
+ 
+    line[n-1] = 0;
+}
+ char * substringPointer;
+  substringPointer = strstr(storedReference, line);
+  int size = strlen(line);
+ 
 
   if (substringPointer != NULL)
   {
@@ -66,7 +71,7 @@ void processLine(const char *line, int interval[2])
   {
     interval[0] = 0;
     interval[1] = 0;
-    printf("%s was not found\n", line);
+    printf("was not found %s\n", line);
   }
 }
 
@@ -111,71 +116,27 @@ void uploadSequence(char uploadedSequence[])
     printf("No reference has been previously uploaded\n");
   else
   {
+   
     int linesCount = 0;
     char **splitted = split(uploadedSequence, '\n', &linesCount);
+   
     int intervals[linesCount][2];
+    printf("Perrrroo\n");
+    printf("Line count is: %d\n", linesCount);
 #pragma parallel for
     for (int i = 0; *(splitted + i); i++)
-      processLine(*(splitted + i), intervals[i]);
+      processLine(splitted[i], intervals[i]);
 
     int coverage = intervalsCoverage(intervals, linesCount);
     float percentage = (float)coverage / (float)strlen(storedReference) * 100;
     printf("%d lines covering %f%% of the genoma reference\n", coverage, percentage);
+    printf("Line count is: %d\n", linesCount);
   }
 }
 
-void receiver(int sockfd)
-{
-  char buff[BUFF_SIZE];
-  while (1)
-  {
-    bzero(buff, BUFF_SIZE);
-    read(sockfd, buff, sizeof(buff));
-    if (strcmp(buff, UPLOAD_REFERENCE) == 0)
-    {
-      bzero(buff, BUFF_SIZE);
-      read(sockfd, buff, sizeof(buff));
-      uploadReference(buff);
-    }
-    else if (strcmp(buff, UPLOAD_SEQUENCE) == 0)
-    {
-      bzero(buff, BUFF_SIZE);
-      read(sockfd, buff, sizeof(buff));
-      uploadSequence(buff);
-    }
-  }
-}
+// int main()
+// {
+//   return 0;
+// }
 
-int main()
-{
-  int sockfd, connfd;
-  SA_IN servaddr, client;
-
-  // Socket create and verification
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd == -1)
-    exit(EXIT_FAILURE);
-  bzero(&servaddr, sizeof(servaddr));
-
-  // Assign IP, PORT
-  servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  servaddr.sin_port = htons(PORT);
-
-  // Binding newly created socket to given IP and verification
-  if ((bind(sockfd, (SA *)&servaddr, sizeof(servaddr))) != 0)
-    exit(EXIT_FAILURE);
-
-  // Listen
-  if ((listen(sockfd, 5)) != 0)
-    exit(EXIT_FAILURE);
-
-  // Accept the data packet from client and verification
-  int len = sizeof(client);
-  connfd = accept(sockfd, (SA *)&client, (socklen_t *)&len);
-  if (connfd < 0)
-    exit(EXIT_FAILURE);
-
-  receiver(connfd);
-  close(sockfd);
-}
+// TODO: Daemonize

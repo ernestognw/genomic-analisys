@@ -27,7 +27,7 @@ char **split(char *toSplit, const char delimiter, int *count)
   // Count how many elements will be extracted.
   while (*tmp)
   {
-    if (delimiter == tmp[a])
+    if (delimiter == *tmp)
     {
       *(count) += 1;
       lastDelimiter = tmp;

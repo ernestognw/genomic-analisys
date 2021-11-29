@@ -4,7 +4,7 @@ const reference = readFileSync("./src/tests/1/ref.seq").toString();
 const sequence = readFileSync("./src/tests/1/seq.txt").toString();
 
 let included = 0;
-let characters = 0;
+let lines = 0;
 const intervals = [];
 
 const coverage = (ranges) => {
@@ -36,7 +36,7 @@ sequence.split("\n").forEach((line, index) => {
   if (position !== -1 && line) {
     console.log(`Line ${index} found at index ${position}`);
     included += trimmedLine.length;
-    characters++;
+    lines++;
     intervals.push([position, position + trimmedLine.length]);
   }
 });
@@ -44,7 +44,7 @@ sequence.split("\n").forEach((line, index) => {
 const calculatedCoverage = coverage(intervals);
 
 console.log(
-  `${calculatedCoverage} characters covering ${(
+  `${lines} lines ${calculatedCoverage} characters covering ${(
     (calculatedCoverage / reference.length) *
     100
   ).toFixed(2)}% of the genoma reference`

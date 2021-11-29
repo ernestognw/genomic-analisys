@@ -87,7 +87,7 @@ char *trimwhitespace(char *str)
   return str;
 }
 
-void processLine(char *line, int interval[2])
+void processLine(char *line, int interval[2], int *mappedSequences)
 {
   line = trimwhitespace(line);
   char *substringPointer = strstr(storedReference, line);
@@ -97,6 +97,7 @@ void processLine(char *line, int interval[2])
     int position = substringPointer - storedReference;
     interval[0] = position;
     interval[1] = position + strlen(line);
+    *(mappedSequences) += 1;
     printf("%s found from character %d to character %d\n", line, interval[0], interval[1]);
   }
   else
@@ -155,18 +156,21 @@ void uploadSequence(char uploadedSequence[])
     bzero(uploadedSequence, BUFF_SIZE);
 
     int i = 0;
-#pragma omp parallel default(none) shared(i, splitted, intervals, linesCount)
+    int mappedSequences = 0;
+#pragma omp parallel default(none) shared(i, splitted, intervals, linesCount, mappedSequences)
     {
 #pragma omp for
       for (int i = 0; i < linesCount; i++)
       {
-        processLine(*(splitted + i), intervals[i]);
+        processLine(*(splitted + i), intervals[i], &mappedSequences);
       }
     }
 
     int coverage = intervalsCoverage(intervals, linesCount);
     float percentage = (float)coverage / (float)strlen(storedReference) * 100;
     printf("%d characters covering %f%% of the genoma reference\n", coverage, percentage);
+    printf("%d sequencias mapeadas\n", mappedSequences);
+    printf("%d sequencias no mapeadas\n", linesCount - mappedSequences);
   }
 }
 

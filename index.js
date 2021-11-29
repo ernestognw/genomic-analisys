@@ -1,7 +1,7 @@
 const { readFileSync } = require("fs");
 
-const reference = readFileSync("./src/tests/2/ref.seq").toString();
-const sequence = readFileSync("./src/tests/2/seq.txt").toString();
+const reference = readFileSync("./src/tests/1/ref.seq").toString();
+const sequence = readFileSync("./src/tests/1/seq.txt").toString();
 
 let included = 0;
 let lines = 0;
@@ -49,5 +49,5 @@ console.log(
   `${lines} lines ${calculatedCoverage} characters covering ${(
     (calculatedCoverage / reference.length) *
     100
-  ).toFixed(2)}% of the genoma reference`
+  ).toFixed(10)}% of the genoma reference`
 );

@@ -121,8 +121,7 @@ void uploadSequence(char uploadedSequence[])
     char **splitted = split(uploadedSequence, '\n', &linesCount);
    
     int intervals[linesCount][2];
-    printf("Perrrroo\n");
-    printf("Line count is: %d\n", linesCount);
+  
 #pragma parallel for
     for (int i = 0; *(splitted + i); i++)
       processLine(splitted[i], intervals[i]);
